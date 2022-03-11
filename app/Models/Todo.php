@@ -9,5 +9,5 @@ class Todo extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["title, done"];
+    protected $fillable = ["title, status"];
 }

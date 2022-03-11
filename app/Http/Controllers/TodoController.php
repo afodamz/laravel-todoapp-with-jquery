@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTodoRequest;
 use App\Http\Requests\UpdateTodoRequest;
 use App\Models\Todo;
+use Illuminate\Http\Request;
 
 class TodoController extends Controller
 {
@@ -14,7 +15,9 @@ class TodoController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(){
-        return view('home');
+        $todo = Todo::all();
+        $todo = Todo::orderBy('created_at', 'DESC')->get();
+        return view('home')->with('todos', $todo);
     }
 
     /**
@@ -22,33 +25,19 @@ class TodoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create(){
-
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreTodoRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(StoreTodoRequest $request){
-        $this->validate($request,[
-            'title'=>'string|required',
-            'done'=>'boolean|integer',
+    public function create(Request $request){
+        $this->validate($request, [
+            'title' => 'string|required',
         ]);
-
-        $data = $request->all();
-
-        $todo = Todo::Create($data);
-        if($todo){
-            return redirect()->back()->with('success','todo Successfully added');
-        }
-        else{
-            return redirect()->back()->with('error','todo added unSuccessfully');
+        $todo = new Todo;
+        $todo->title = $request->input('title');
+        $todo->save();
+        if ($todo) {
+            return redirect()->back()->with('success', 'todo Successfully added');
+        } else {
+            return redirect()->back()->with('error', 'todo added unSuccessfully');
         }
     }
-
     /**
      * Display the specified resource.
      *
@@ -66,17 +55,11 @@ class TodoController extends Controller
      * @param  \App\Models\Todo  $todo
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request, $id)
-    {
+    public function edit(Request $request, $id){
         //
         $todo = Todo::findOrFail($id);
-        $this->validate($request,[
-            'title'=>'string|required',
-            'done'=>'boolean|integer',
-        ]);
-
-        $data = $request->all();
-        $updateBlog = $todo->fill($data)->save();
+        $todo->title = $request->input('title');
+        $updateBlog = $todo->save();
         if($updateBlog){
             return redirect()->back()->with('success','todo Successfully added');
         }
@@ -85,6 +68,18 @@ class TodoController extends Controller
         }
     }
 
+    public function changeStatus(Request $request, $id){
+        //
+        $todo = Todo::findOrFail($id);
+        $todo->status = $request->input('status');
+        $updateBlog = $todo->save();
+        if($updateBlog){
+            return redirect()->back()->with('success','todo Successfully added');
+        }
+        else{
+            return redirect()->back()->with('error','todo added unSuccessfully');
+        }
+    }
     /**
      * Update the specified resource in storage.
      *
